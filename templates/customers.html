@@ -33,6 +33,9 @@
                 <a href="/edit_customer/{{ customer.id }}" class="btn">Edit</a>
                 <a href="/add_deposit?customer_id={{ customer.id }}" class="btn btn-success">Add Deposit</a>
                 <a href="/customer_report/{{ customer.id }}" class="btn">Export Report</a>
+                <form method="POST" action="/delete_customer/{{ customer.id }}" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this customer? This action cannot be undone.');">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
             </td>
         </tr>
         {% endfor %}

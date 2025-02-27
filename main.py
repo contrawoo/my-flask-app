@@ -115,6 +115,30 @@ def edit_customer(customer_id):
     
     return render_template('edit_customer.html', customer=customer)
 
+@app.route('/delete_customer/<int:customer_id>', methods=['POST'])
+def delete_customer(customer_id):
+    customers = load_customers()
+    deposits = load_deposits()
+    
+    # Find the customer
+    customer = next((c for c in customers if c.get('id') == customer_id), None)
+    if not customer:
+        flash('Customer not found', 'error')
+        return redirect(url_for('customer_list'))
+    
+    # Check if customer has deposits
+    customer_deposits = [d for d in deposits if d.get('customer_id') == customer_id]
+    if customer_deposits:
+        flash('Cannot delete customer with existing deposits. Remove deposits first.', 'error')
+        return redirect(url_for('customer_list'))
+    
+    # Remove customer from list
+    customers = [c for c in customers if c.get('id') != customer_id]
+    save_customers(customers)
+    
+    flash('Customer deleted successfully', 'success')
+    return redirect(url_for('customer_list'))
+
 @app.route('/deposits')
 def deposit_list():
     deposits = load_deposits()
