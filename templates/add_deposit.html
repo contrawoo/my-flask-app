@@ -6,7 +6,10 @@
 
 <div class="search-container">
     <label for="customer-search">Search Customer by Name or Loan Number:</label>
-    <input type="text" id="customer-search" placeholder="Type customer name or loan number..." oninput="filterCustomers()">
+    <div class="search-input-group">
+        <input type="text" id="customer-search" placeholder="Type customer name or loan number...">
+        <button type="button" class="btn btn-primary" id="search-button" onclick="filterCustomers()">Search</button>
+    </div>
 </div>
 
 <form method="POST">
@@ -48,20 +51,55 @@
         const searchTerm = document.getElementById('customer-search').value.toLowerCase();
         const selectElement = document.getElementById('customer_id');
         const options = selectElement.options;
+        let matchFound = false;
         
         for (let i = 0; i < options.length; i++) {
             if (i === 0) continue; // Skip the "Select Customer" option
             
-            const customerName = options[i].getAttribute('data-name');
+            const customerName = options[i].getAttribute('data-name') || '';
             const loanNumber = options[i].getAttribute('data-loan') || '';
             
             if (customerName.includes(searchTerm) || loanNumber.includes(searchTerm)) {
                 options[i].style.display = '';
+                matchFound = true;
             } else {
                 options[i].style.display = 'none';
             }
         }
+        
+        // Show search results feedback
+        const feedbackElement = document.getElementById('search-feedback');
+        if (feedbackElement) {
+            if (searchTerm === '') {
+                feedbackElement.textContent = '';
+                feedbackElement.style.display = 'none';
+            } else if (!matchFound) {
+                feedbackElement.textContent = 'No customers found matching your search.';
+                feedbackElement.style.display = 'block';
+            } else {
+                feedbackElement.textContent = 'Showing matching customers.';
+                feedbackElement.style.display = 'block';
+            }
+        }
     }
+    
+    // Also enable search when pressing Enter in the search box
+    document.getElementById('customer-search').addEventListener('keyup', function(event) {
+        if (event.key === 'Enter') {
+            filterCustomers();
+        }
+    });
+    
+    // Initialize search on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add a feedback element for search results
+        const searchContainer = document.querySelector('.search-container');
+        const feedbackDiv = document.createElement('div');
+        feedbackDiv.id = 'search-feedback';
+        feedbackDiv.style.marginTop = '5px';
+        feedbackDiv.style.display = 'none';
+        searchContainer.appendChild(feedbackDiv);
+    });
 </script>
 
 <style>
@@ -69,11 +107,35 @@
         margin-bottom: 20px;
     }
     
-    #customer-search {
-        padding: 8px;
-        width: 100%;
-        box-sizing: border-box;
+    .search-input-group {
+        display: flex;
         margin-top: 5px;
+    }
+    
+    #customer-search {
+        flex: 1;
+        padding: 8px;
+        box-sizing: border-box;
+        border-radius: 4px 0 0 4px;
+        border: 1px solid #ccc;
+    }
+    
+    #search-button {
+        padding: 8px 15px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 0 4px 4px 0;
+        cursor: pointer;
+    }
+    
+    #search-button:hover {
+        background-color: #45a049;
+    }
+    
+    #search-feedback {
+        color: #666;
+        font-size: 0.9em;
     }
 </style>
 {% endblock %}
