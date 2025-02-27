@@ -52,6 +52,7 @@
         const selectElement = document.getElementById('customer_id');
         const options = selectElement.options;
         let matchFound = false;
+        let visibleCount = 0;
         
         for (let i = 0; i < options.length; i++) {
             if (i === 0) continue; // Skip the "Select Customer" option
@@ -62,24 +63,35 @@
             if (customerName.includes(searchTerm) || loanNumber.includes(searchTerm)) {
                 options[i].style.display = '';
                 matchFound = true;
+                visibleCount++;
             } else {
                 options[i].style.display = 'none';
             }
         }
         
+        // Create feedback element if it doesn't exist
+        let feedbackElement = document.getElementById('search-feedback');
+        if (!feedbackElement) {
+            feedbackElement = document.createElement('div');
+            feedbackElement.id = 'search-feedback';
+            feedbackElement.style.marginTop = '5px';
+            feedbackElement.style.color = '#666';
+            feedbackElement.style.fontSize = '0.9em';
+            document.querySelector('.search-container').appendChild(feedbackElement);
+        }
+        
         // Show search results feedback
-        const feedbackElement = document.getElementById('search-feedback');
-        if (feedbackElement) {
-            if (searchTerm === '') {
-                feedbackElement.textContent = '';
-                feedbackElement.style.display = 'none';
-            } else if (!matchFound) {
-                feedbackElement.textContent = 'No customers found matching your search.';
-                feedbackElement.style.display = 'block';
-            } else {
-                feedbackElement.textContent = 'Showing matching customers.';
-                feedbackElement.style.display = 'block';
-            }
+        if (searchTerm === '') {
+            feedbackElement.textContent = '';
+            feedbackElement.style.display = 'none';
+        } else if (!matchFound) {
+            feedbackElement.textContent = 'No customers found matching your search.';
+            feedbackElement.style.display = 'block';
+            feedbackElement.style.color = '#f44336';
+        } else {
+            feedbackElement.textContent = `Found ${visibleCount} matching customer(s).`;
+            feedbackElement.style.display = 'block';
+            feedbackElement.style.color = '#4CAF50';
         }
     }
     
@@ -92,13 +104,12 @@
     
     // Initialize search on page load
     document.addEventListener('DOMContentLoaded', function() {
-        // Add a feedback element for search results
-        const searchContainer = document.querySelector('.search-container');
-        const feedbackDiv = document.createElement('div');
-        feedbackDiv.id = 'search-feedback';
-        feedbackDiv.style.marginTop = '5px';
-        feedbackDiv.style.display = 'none';
-        searchContainer.appendChild(feedbackDiv);
+        // Add event listener for filtering on input
+        document.getElementById('customer-search').addEventListener('input', function() {
+            if (this.value.length >= 1) {
+                filterCustomers();
+            }
+        });
     });
 </script>
 
