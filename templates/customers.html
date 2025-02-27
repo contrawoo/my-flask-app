@@ -1,0 +1,36 @@
+
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Customers</h1>
+<a href="/add_customer" class="btn btn-success">Add New Customer</a>
+
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Phone</th>
+            <th>Email</th>
+            <th>Address</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for customer in customers %}
+        <tr>
+            <td>{{ customer.id }}</td>
+            <td>{{ customer.name }}</td>
+            <td>{{ customer.phone }}</td>
+            <td>{{ customer.email }}</td>
+            <td>{{ customer.address }}</td>
+            <td>
+                <a href="/edit_customer/{{ customer.id }}" class="btn">Edit</a>
+                <a href="/add_deposit?customer_id={{ customer.id }}" class="btn btn-success">Add Deposit</a>
+                <a href="/customer_report/{{ customer.id }}" class="btn">Export Report</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

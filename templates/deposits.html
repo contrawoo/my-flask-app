@@ -1,0 +1,31 @@
+
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Deposits</h1>
+<a href="/add_deposit" class="btn btn-success">Add New Deposit</a>
+<a href="/export_excel" class="btn">Export to Excel</a>
+
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Date</th>
+            <th>Customer</th>
+            <th>Amount</th>
+            <th>Notes</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for deposit in deposits %}
+        <tr>
+            <td>{{ deposit.id }}</td>
+            <td>{{ deposit.date }}</td>
+            <td>{{ deposit.customer_name }}</td>
+            <td>{{ deposit.amount }}</td>
+            <td>{{ deposit.notes }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

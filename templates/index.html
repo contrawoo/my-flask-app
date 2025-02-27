@@ -1,0 +1,50 @@
+
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Daily Deposit Tracker</h1>
+
+<div class="dashboard-cards">
+    <div class="card">
+        <h3>Customers</h3>
+        <p>Total Customers: {{ customers|length }}</p>
+        <a href="/customers" class="btn">View All Customers</a>
+    </div>
+    
+    <div class="card">
+        <h3>Quick Actions</h3>
+        <p>Add new customers or deposits</p>
+        <a href="/add_customer" class="btn">Add Customer</a>
+        <a href="/add_deposit" class="btn">Add Deposit</a>
+    </div>
+    
+    <div class="card">
+        <h3>Reports</h3>
+        <p>Export data to Excel</p>
+        <a href="/export_excel" class="btn">Export Data</a>
+    </div>
+</div>
+
+<h2>Recent Customers</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Phone</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for customer in customers[-5:] %}
+        <tr>
+            <td>{{ customer.name }}</td>
+            <td>{{ customer.phone }}</td>
+            <td>
+                <a href="/add_deposit?customer_id={{ customer.id }}" class="btn">Add Deposit</a>
+                <a href="/customer_report/{{ customer.id }}" class="btn">Export Report</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
