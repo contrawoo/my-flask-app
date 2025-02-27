@@ -4,13 +4,18 @@
 {% block content %}
 <h1>Add New Deposit</h1>
 
+<div class="search-container">
+    <label for="customer-search">Search Customer by Name or Loan Number:</label>
+    <input type="text" id="customer-search" placeholder="Type customer name or loan number..." oninput="filterCustomers()">
+</div>
+
 <form method="POST">
     <div class="form-group">
         <label for="customer_id">Customer *</label>
         <select id="customer_id" name="customer_id" required>
             <option value="">Select Customer</option>
             {% for customer in customers %}
-            <option value="{{ customer.id }}" {% if request.args.get('customer_id')|int == customer.id %}selected{% endif %}>{{ customer.name }}</option>
+            <option value="{{ customer.id }}" data-name="{{ customer.name|lower }}" data-loan="{{ customer.loan_number|lower }}" {% if request.args.get('customer_id')|int == customer.id %}selected{% endif %}>{{ customer.name }} {% if customer.loan_number %}(Loan: {{ customer.loan_number }}){% endif %}</option>
             {% endfor %}
         </select>
     </div>
@@ -37,5 +42,38 @@
 <script>
     // Set default date to today
     document.getElementById('date').valueAsDate = new Date();
+    
+    // Function to filter customers based on search input
+    function filterCustomers() {
+        const searchTerm = document.getElementById('customer-search').value.toLowerCase();
+        const selectElement = document.getElementById('customer_id');
+        const options = selectElement.options;
+        
+        for (let i = 0; i < options.length; i++) {
+            if (i === 0) continue; // Skip the "Select Customer" option
+            
+            const customerName = options[i].getAttribute('data-name');
+            const loanNumber = options[i].getAttribute('data-loan') || '';
+            
+            if (customerName.includes(searchTerm) || loanNumber.includes(searchTerm)) {
+                options[i].style.display = '';
+            } else {
+                options[i].style.display = 'none';
+            }
+        }
+    }
 </script>
+
+<style>
+    .search-container {
+        margin-bottom: 20px;
+    }
+    
+    #customer-search {
+        padding: 8px;
+        width: 100%;
+        box-sizing: border-box;
+        margin-top: 5px;
+    }
+</style>
 {% endblock %}
