@@ -220,6 +220,75 @@ def customer_report(customer_id):
     
     return send_file(export_file, as_attachment=True, download_name=f'customer_{customer["name"].replace(" ", "_")}_report.xlsx')
 
+@app.route('/import_customers', methods=['GET', 'POST'])
+def import_customers():
+    if request.method == 'POST':
+        if 'file' not in request.files:
+            flash('No file selected', 'error')
+            return redirect(url_for('import_customers'))
+        
+        file = request.files['file']
+        if file.filename == '':
+            flash('No file selected', 'error')
+            return redirect(url_for('import_customers'))
+        
+        # Check file extension
+        if not (file.filename.endswith('.csv') or file.filename.endswith('.xlsx') or file.filename.endswith('.xls')):
+            flash('Only CSV and Excel files are supported', 'error')
+            return redirect(url_for('import_customers'))
+        
+        try:
+            # Read the file
+            if file.filename.endswith('.csv'):
+                df = pd.read_csv(file)
+            else:
+                df = pd.read_excel(file)
+            
+            # Validate the structure (must have at least a name column)
+            if 'name' not in df.columns and 'Name' not in df.columns:
+                flash('The file must contain a "name" or "Name" column', 'error')
+                return redirect(url_for('import_customers'))
+            
+            # Normalize column names
+            df.columns = [col.lower() for col in df.columns]
+            
+            # Load existing customers
+            customers = load_customers()
+            current_id = get_next_customer_id()
+            imported_count = 0
+            
+            # Process each row
+            for _, row in df.iterrows():
+                name = row.get('name', '')
+                if not name:
+                    continue
+                
+                new_customer = {
+                    'id': current_id,
+                    'name': name,
+                    'phone': str(row.get('phone', '')) if 'phone' in row else '',
+                    'email': row.get('email', '') if 'email' in row else '',
+                    'loan_number': str(row.get('loan_number', '')) if 'loan_number' in row else '',
+                    'address': row.get('address', '') if 'address' in row else '',
+                    'created_at': datetime.now().isoformat()
+                }
+                
+                customers.append(new_customer)
+                current_id += 1
+                imported_count += 1
+            
+            # Save the updated customer list
+            save_customers(customers)
+            
+            flash(f'Successfully imported {imported_count} customers', 'success')
+            return redirect(url_for('customer_list'))
+            
+        except Exception as e:
+            flash(f'Error importing customers: {str(e)}', 'error')
+            return redirect(url_for('import_customers'))
+    
+    return render_template('import_customers.html')
+
 if __name__ == '__main__':
     # Create templates directory
     os.makedirs('templates', exist_ok=True)

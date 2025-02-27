@@ -1,0 +1,52 @@
+
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Import Customers</h1>
+
+<div class="import-info">
+    <h2>Instructions</h2>
+    <p>Upload a CSV or Excel file containing customer information. The file should have the following columns:</p>
+    <ul>
+        <li><strong>name</strong> (required): Customer name</li>
+        <li><strong>phone</strong> (optional): Customer phone number</li>
+        <li><strong>email</strong> (optional): Customer email address</li>
+        <li><strong>loan_number</strong> (optional): Loan number</li>
+        <li><strong>address</strong> (optional): Customer address</li>
+    </ul>
+</div>
+
+<form method="POST" enctype="multipart/form-data">
+    <div class="form-group">
+        <label for="file">Select File (CSV or Excel)</label>
+        <input type="file" id="file" name="file" accept=".csv, .xlsx, .xls" required>
+    </div>
+    
+    <button type="submit" class="btn btn-success">Import Customers</button>
+    <a href="/customers" class="btn">Cancel</a>
+</form>
+
+<div class="sample-template">
+    <h3>Sample Template</h3>
+    <p>Download a sample template to get started:</p>
+    <a href="#" onclick="downloadSampleTemplate()" class="btn">Download Template</a>
+</div>
+
+<script>
+    function downloadSampleTemplate() {
+        // Create a sample CSV file
+        const csvContent = "name,phone,email,loan_number,address\nJohn Doe,1234567890,john@example.com,L123456,123 Main St\nJane Smith,0987654321,jane@example.com,L654321,456 Oak Ave";
+        
+        // Create a download link
+        const element = document.createElement('a');
+        element.setAttribute('href', 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvContent));
+        element.setAttribute('download', 'customer_template.csv');
+        
+        // Simulate click to trigger download
+        element.style.display = 'none';
+        document.body.appendChild(element);
+        element.click();
+        document.body.removeChild(element);
+    }
+</script>
+{% endblock %}
