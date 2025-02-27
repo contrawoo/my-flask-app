@@ -20,6 +20,19 @@
             background-color: #3498db;
             color: white;
             padding: 15px 20px;
+            display: flex;
+            align-items: center;
+        }
+        .logo-container {
+            margin-right: 20px;
+        }
+        #app-logo {
+            height: 40px;
+            max-width: 200px;
+            object-fit: contain;
+        }
+        .nav-links {
+            flex: 1;
         }
         .navbar a {
             color: white;
@@ -132,12 +145,18 @@
 </head>
 <body>
     <div class="navbar">
-        <a href="/">Dashboard</a>
-        <a href="/customers">Customers</a>
-        <a href="/deposits">Deposits</a>
-        <a href="/add_deposit">Add Deposit</a>
-        <a href="/add_customer">Add Customer</a>
-        <a href="/export_excel">Export Report</a>
+        <div class="logo-container">
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Company Logo" id="app-logo">
+        </div>
+        <div class="nav-links">
+            <a href="/">Dashboard</a>
+            <a href="/customers">Customers</a>
+            <a href="/deposits">Deposits</a>
+            <a href="/add_deposit">Add Deposit</a>
+            <a href="/add_customer">Add Customer</a>
+            <a href="/export_excel">Export Report</a>
+            <a href="/settings">Settings</a>
+        </div>
     </div>
 
     <div class="container">

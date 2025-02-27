@@ -1,0 +1,48 @@
+
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>App Settings</h1>
+
+<div class="settings-section">
+    <h2>Logo Management</h2>
+    
+    {% if logo_present %}
+    <div class="current-logo">
+        <h3>Current Logo</h3>
+        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Current Logo" style="max-height: 100px; max-width: 300px;">
+        <form method="POST" style="margin-top: 10px;">
+            <button type="submit" name="remove_logo" value="1" class="btn btn-danger">Remove Logo</button>
+        </form>
+    </div>
+    {% else %}
+    <p>No logo has been uploaded yet.</p>
+    {% endif %}
+    
+    <div class="upload-logo">
+        <h3>Upload New Logo</h3>
+        <p>Upload a PNG, JPG, or GIF image (recommended size: 200x40 pixels)</p>
+        <form method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <input type="file" name="logo" accept="image/png, image/jpeg, image/gif">
+            </div>
+            <button type="submit" class="btn btn-success">Upload Logo</button>
+        </form>
+    </div>
+</div>
+
+<style>
+    .settings-section {
+        max-width: 600px;
+        margin: 20px 0;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+    .current-logo {
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #eee;
+    }
+</style>
+{% endblock %}

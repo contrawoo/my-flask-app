@@ -2,10 +2,12 @@
 import os
 import json
 import pandas as pd
+import shutil
+from werkzeug.utils import secure_filename
 from datetime import datetime
 from flask import Flask, render_template, request, redirect, url_for, flash, session, send_file
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static')
 app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'dev_key_for_deposit_tracker')
 
 # Data storage paths
@@ -313,7 +315,34 @@ def import_customers():
     
     return render_template('import_customers.html')
 
+@app.route('/settings', methods=['GET', 'POST'])
+def settings():
+    logo_present = os.path.exists('static/images/logo.png')
+    
+    if request.method == 'POST':
+        if 'logo' in request.files:
+            logo_file = request.files['logo']
+            if logo_file.filename != '':
+                # Create static/images directory if it doesn't exist
+                os.makedirs('static/images', exist_ok=True)
+                
+                # Save the uploaded logo
+                filename = secure_filename('logo.png')
+                logo_path = os.path.join('static/images', filename)
+                logo_file.save(logo_path)
+                flash('Logo uploaded successfully', 'success')
+                return redirect(url_for('settings'))
+                
+        if 'remove_logo' in request.form:
+            if os.path.exists('static/images/logo.png'):
+                os.remove('static/images/logo.png')
+                flash('Logo removed successfully', 'success')
+                return redirect(url_for('settings'))
+                
+    return render_template('settings.html', logo_present=logo_present)
+
 if __name__ == '__main__':
-    # Create templates directory
+    # Create directories
     os.makedirs('templates', exist_ok=True)
+    os.makedirs('static/images', exist_ok=True)
     app.run(host='0.0.0.0', port=8080)
