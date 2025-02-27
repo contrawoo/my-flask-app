@@ -7,7 +7,7 @@ from werkzeug.utils import secure_filename
 from datetime import datetime
 from flask import Flask, render_template, request, redirect, url_for, flash, session, send_file
 
-app = Flask(__name__, static_folder='static')
+app = Flask(__name__, static_folder='static', static_url_path='/static')
 app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'dev_key_for_deposit_tracker')
 
 # Data storage paths

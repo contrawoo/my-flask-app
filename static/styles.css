@@ -1,0 +1,19 @@
+
+/* Logo styling */
+.logo-container {
+    display: flex;
+    align-items: center;
+    padding: 5px;
+}
+
+#app-logo {
+    max-height: 60px;
+    max-width: 100%;
+}
+
+/* Ensure responsive behavior */
+@media (max-width: 768px) {
+    #app-logo {
+        max-height: 40px;
+    }
+}
