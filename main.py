@@ -130,6 +130,7 @@ def deposit_list():
 @app.route('/add_deposit', methods=['GET', 'POST'])
 def add_deposit():
     customers = load_customers()
+    today = datetime.now().strftime('%Y-%m-%d')
     
     if request.method == 'POST':
         customer_id = int(request.form.get('customer_id'))
@@ -156,7 +157,7 @@ def add_deposit():
         flash('Deposit added successfully', 'success')
         return redirect(url_for('deposit_list'))
     
-    return render_template('add_deposit.html', customers=customers)
+    return render_template('add_deposit.html', customers=customers, today=today)
 
 @app.route('/export_excel')
 def export_excel():
