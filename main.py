@@ -56,12 +56,14 @@ def get_next_deposit_id():
 @app.route('/')
 def index():
     customers = load_customers()
-    return render_template('index.html', customers=customers)
+    logo_present = os.path.exists('static/images/logo.png')
+    return render_template('index.html', customers=customers, logo_present=logo_present)
 
 @app.route('/customers')
 def customer_list():
     customers = load_customers()
-    return render_template('customers.html', customers=customers)
+    logo_present = os.path.exists('static/images/logo.png')
+    return render_template('customers.html', customers=customers, logo_present=logo_present)
 
 @app.route('/add_customer', methods=['GET', 'POST'])
 def add_customer():
