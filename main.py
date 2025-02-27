@@ -6,9 +6,20 @@ import shutil
 from werkzeug.utils import secure_filename
 from datetime import datetime
 from flask import Flask, render_template, request, redirect, url_for, flash, session, send_file
+from functools import wraps
 
 app = Flask(__name__, static_folder='static', static_url_path='/static')
 app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'dev_key_for_deposit_tracker')
+
+# Login required decorator
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session:
+            flash('Please log in to access this page', 'error')
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
 
 # Data storage paths
 DATA_DIR = 'data'
@@ -29,8 +40,17 @@ if not os.path.exists(DEPOSITS_FILE):
         json.dump([], f)
         
 if not os.path.exists(USERS_FILE):
+    # Create default admin user
+    default_user = [{
+        'id': 1,
+        'username': 'admin',
+        'email': 'admin@example.com',
+        'password': 'admin123',  # In a real app, this should be hashed
+        'role': 'admin',
+        'created_at': datetime.now().isoformat()
+    }]
     with open(USERS_FILE, 'w') as f:
-        json.dump([], f)
+        json.dump(default_user, f, indent=2)
 
 # Helper functions
 def load_customers():
@@ -69,20 +89,51 @@ def get_next_user_id():
     users = load_users()
     return max([u.get('id', 0) for u in users], default=0) + 1
 
-# Routes
+# Authentication routes
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        
+        users = load_users()
+        user = next((u for u in users if u.get('username') == username and u.get('password') == password), None)
+        
+        if user:
+            session['user_id'] = user['id']
+            session['username'] = user['username']
+            session['role'] = user.get('role', 'user')
+            flash('Login successful', 'success')
+            return redirect(url_for('index'))
+        else:
+            flash('Invalid username or password', 'error')
+    
+    logo_present = os.path.exists('static/images/logo.png')
+    return render_template('login.html', logo_present=logo_present)
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    flash('You have been logged out', 'success')
+    return redirect(url_for('login'))
+
+# Protected routes
 @app.route('/')
+@login_required
 def index():
     customers = load_customers()
     logo_present = os.path.exists('static/images/logo.png')
     return render_template('index.html', customers=customers, logo_present=logo_present)
 
 @app.route('/customers')
+@login_required
 def customer_list():
     customers = load_customers()
     logo_present = os.path.exists('static/images/logo.png')
     return render_template('customers.html', customers=customers, logo_present=logo_present)
 
 @app.route('/add_customer', methods=['GET', 'POST'])
+@login_required
 def add_customer():
     if request.method == 'POST':
         name = request.form.get('name')
@@ -114,6 +165,7 @@ def add_customer():
     return render_template('add_customer.html')
 
 @app.route('/edit_customer/<int:customer_id>', methods=['GET', 'POST'])
+@login_required
 def edit_customer(customer_id):
     customers = load_customers()
     customer = next((c for c in customers if c.get('id') == customer_id), None)
@@ -137,6 +189,7 @@ def edit_customer(customer_id):
     return render_template('edit_customer.html', customer=customer)
 
 @app.route('/delete_customer/<int:customer_id>', methods=['POST'])
+@login_required
 def delete_customer(customer_id):
     customers = load_customers()
     deposits = load_deposits()
@@ -161,6 +214,7 @@ def delete_customer(customer_id):
     return redirect(url_for('customer_list'))
 
 @app.route('/deposits')
+@login_required
 def deposit_list():
     deposits = load_deposits()
     customers = load_customers()
@@ -173,6 +227,7 @@ def deposit_list():
     return render_template('deposits.html', deposits=deposits)
 
 @app.route('/add_deposit', methods=['GET', 'POST'])
+@login_required
 def add_deposit():
     customers = load_customers()
     today = datetime.now().strftime('%Y-%m-%d')
@@ -205,6 +260,7 @@ def add_deposit():
     return render_template('add_deposit.html', customers=customers, today=today)
 
 @app.route('/export_excel')
+@login_required
 def export_excel():
     customers = load_customers()
     deposits = load_deposits()
@@ -236,6 +292,7 @@ def export_excel():
     return send_file(export_file, as_attachment=True, download_name=f'deposit_report_{datetime.now().strftime("%Y%m%d")}.xlsx')
 
 @app.route('/customer_report/<int:customer_id>')
+@login_required
 def customer_report(customer_id):
     customers = load_customers()
     deposits = load_deposits()
@@ -266,6 +323,7 @@ def customer_report(customer_id):
     return send_file(export_file, as_attachment=True, download_name=f'customer_{customer["name"].replace(" ", "_")}_report.xlsx')
 
 @app.route('/import_customers', methods=['GET', 'POST'])
+@login_required
 def import_customers():
     if request.method == 'POST':
         if 'file' not in request.files:
@@ -335,6 +393,7 @@ def import_customers():
     return render_template('import_customers.html')
 
 @app.route('/settings', methods=['GET', 'POST'])
+@login_required
 def settings():
     logo_present = os.path.exists('static/images/logo.png')
     
@@ -361,11 +420,13 @@ def settings():
     return render_template('settings.html', logo_present=logo_present)
 
 @app.route('/users')
+@login_required
 def user_list():
     users = load_users()
     return render_template('users.html', users=users)
 
 @app.route('/add_user', methods=['GET', 'POST'])
+@login_required
 def add_user():
     if request.method == 'POST':
         username = request.form.get('username')
@@ -403,6 +464,7 @@ def add_user():
     return render_template('add_user.html')
 
 @app.route('/edit_user/<int:user_id>', methods=['GET', 'POST'])
+@login_required
 def edit_user(user_id):
     users = load_users()
     user = next((u for u in users if u.get('id') == user_id), None)
@@ -441,6 +503,7 @@ def edit_user(user_id):
     return render_template('edit_user.html', user=user)
 
 @app.route('/delete_user/<int:user_id>', methods=['POST'])
+@login_required
 def delete_user(user_id):
     users = load_users()
     

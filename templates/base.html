@@ -151,6 +151,7 @@
             {% endif %}
         </div>
         <div class="nav-links">
+            {% if session.get('user_id') %}
             <a href="/">Dashboard</a>
             <a href="/customers">Customers</a>
             <a href="/deposits">Deposits</a>
@@ -159,6 +160,11 @@
             <a href="/users">Users</a>
             <a href="/export_excel">Export Report</a>
             <a href="/settings">Settings</a>
+            <span style="margin-left: auto; color: white;">{{ session.get('username') }}</span>
+            <a href="/logout" style="margin-left: 15px;">Logout</a>
+            {% else %}
+            <a href="/login">Login</a>
+            {% endif %}
         </div>
     </div>
 
