@@ -12,6 +12,7 @@
             <th>Name</th>
             <th>Phone</th>
             <th>Email</th>
+            <th>Loan Number</th>
             <th>Address</th>
             <th>Actions</th>
         </tr>
@@ -23,6 +24,7 @@
             <td>{{ customer.name }}</td>
             <td>{{ customer.phone }}</td>
             <td>{{ customer.email }}</td>
+            <td>{{ customer.loan_number }}</td>
             <td>{{ customer.address }}</td>
             <td>
                 <a href="/edit_customer/{{ customer.id }}" class="btn">Edit</a>

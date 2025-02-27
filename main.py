@@ -67,6 +67,7 @@ def add_customer():
         name = request.form.get('name')
         phone = request.form.get('phone')
         email = request.form.get('email')
+        loan_number = request.form.get('loan_number')
         address = request.form.get('address')
         
         if not name:
@@ -79,6 +80,7 @@ def add_customer():
             'name': name,
             'phone': phone,
             'email': email,
+            'loan_number': loan_number,
             'address': address,
             'created_at': datetime.now().isoformat()
         }
@@ -103,6 +105,7 @@ def edit_customer(customer_id):
         customer['name'] = request.form.get('name')
         customer['phone'] = request.form.get('phone')
         customer['email'] = request.form.get('email')
+        customer['loan_number'] = request.form.get('loan_number')
         customer['address'] = request.form.get('address')
         customer['updated_at'] = datetime.now().isoformat()
         
@@ -172,6 +175,7 @@ def export_excel():
             'Date': deposit['date'],
             'Customer Name': customer.get('name', 'Unknown'),
             'Customer Phone': customer.get('phone', ''),
+            'Loan Number': customer.get('loan_number', ''),
             'Amount': deposit['amount'],
             'Notes': deposit['notes']
         })
