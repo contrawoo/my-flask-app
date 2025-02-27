@@ -1,0 +1,34 @@
+
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Edit User</h1>
+
+<form method="POST">
+    <div class="form-group">
+        <label for="username">Username *</label>
+        <input type="text" id="username" name="username" value="{{ user.username }}" required>
+    </div>
+    
+    <div class="form-group">
+        <label for="email">Email *</label>
+        <input type="email" id="email" name="email" value="{{ user.email }}" required>
+    </div>
+    
+    <div class="form-group">
+        <label for="password">New Password (leave blank to keep current)</label>
+        <input type="password" id="password" name="password">
+    </div>
+    
+    <div class="form-group">
+        <label for="role">Role *</label>
+        <select id="role" name="role" required>
+            <option value="user" {% if user.role == 'user' %}selected{% endif %}>User</option>
+            <option value="admin" {% if user.role == 'admin' %}selected{% endif %}>Admin</option>
+        </select>
+    </div>
+    
+    <button type="submit" class="btn btn-success">Update User</button>
+    <a href="/users" class="btn">Cancel</a>
+</form>
+{% endblock %}

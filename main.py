@@ -14,6 +14,7 @@ app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'dev_key_for_deposit_tracker
 DATA_DIR = 'data'
 CUSTOMERS_FILE = os.path.join(DATA_DIR, 'customers.json')
 DEPOSITS_FILE = os.path.join(DATA_DIR, 'deposits.json')
+USERS_FILE = os.path.join(DATA_DIR, 'users.json')
 
 # Create data directory if it doesn't exist
 os.makedirs(DATA_DIR, exist_ok=True)
@@ -25,6 +26,10 @@ if not os.path.exists(CUSTOMERS_FILE):
 
 if not os.path.exists(DEPOSITS_FILE):
     with open(DEPOSITS_FILE, 'w') as f:
+        json.dump([], f)
+        
+if not os.path.exists(USERS_FILE):
+    with open(USERS_FILE, 'w') as f:
         json.dump([], f)
 
 # Helper functions
@@ -51,6 +56,18 @@ def get_next_customer_id():
 def get_next_deposit_id():
     deposits = load_deposits()
     return max([d.get('id', 0) for d in deposits], default=0) + 1
+
+def load_users():
+    with open(USERS_FILE, 'r') as f:
+        return json.load(f)
+
+def save_users(users):
+    with open(USERS_FILE, 'w') as f:
+        json.dump(users, f, indent=2)
+
+def get_next_user_id():
+    users = load_users()
+    return max([u.get('id', 0) for u in users], default=0) + 1
 
 # Routes
 @app.route('/')
@@ -342,6 +359,103 @@ def settings():
                 return redirect(url_for('settings'))
                 
     return render_template('settings.html', logo_present=logo_present)
+
+@app.route('/users')
+def user_list():
+    users = load_users()
+    return render_template('users.html', users=users)
+
+@app.route('/add_user', methods=['GET', 'POST'])
+def add_user():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        email = request.form.get('email')
+        password = request.form.get('password')
+        role = request.form.get('role')
+        
+        if not username or not email or not password:
+            flash('Username, email, and password are required', 'error')
+            return redirect(url_for('add_user'))
+        
+        users = load_users()
+        
+        # Check if username already exists
+        if any(user['username'] == username for user in users):
+            flash('Username already exists', 'error')
+            return redirect(url_for('add_user'))
+        
+        # Create new user
+        new_user = {
+            'id': get_next_user_id(),
+            'username': username,
+            'email': email,
+            'password': password,  # In a real app, you should hash this password
+            'role': role,
+            'created_at': datetime.now().isoformat()
+        }
+        
+        users.append(new_user)
+        save_users(users)
+        
+        flash('User added successfully', 'success')
+        return redirect(url_for('user_list'))
+    
+    return render_template('add_user.html')
+
+@app.route('/edit_user/<int:user_id>', methods=['GET', 'POST'])
+def edit_user(user_id):
+    users = load_users()
+    user = next((u for u in users if u.get('id') == user_id), None)
+    
+    if not user:
+        flash('User not found', 'error')
+        return redirect(url_for('user_list'))
+    
+    if request.method == 'POST':
+        username = request.form.get('username')
+        email = request.form.get('email')
+        password = request.form.get('password')
+        role = request.form.get('role')
+        
+        if not username or not email:
+            flash('Username and email are required', 'error')
+            return redirect(url_for('edit_user', user_id=user_id))
+        
+        # Check if username already exists (excluding current user)
+        if any(u['username'] == username and u['id'] != user_id for u in users):
+            flash('Username already exists', 'error')
+            return redirect(url_for('edit_user', user_id=user_id))
+        
+        # Update user
+        user['username'] = username
+        user['email'] = email
+        if password:  # Only update password if provided
+            user['password'] = password  # In a real app, you should hash this password
+        user['role'] = role
+        user['updated_at'] = datetime.now().isoformat()
+        
+        save_users(users)
+        flash('User updated successfully', 'success')
+        return redirect(url_for('user_list'))
+    
+    return render_template('edit_user.html', user=user)
+
+@app.route('/delete_user/<int:user_id>', methods=['POST'])
+def delete_user(user_id):
+    users = load_users()
+    
+    # Find the user
+    user = next((u for u in users if u.get('id') == user_id), None)
+    if not user:
+        flash('User not found', 'error')
+        return redirect(url_for('user_list'))
+    
+    # Remove user from list
+    users = [u for u in users if u.get('id') != user_id]
+    save_users(users)
+    
+    flash('User deleted successfully', 'success')
+    return redirect(url_for('user_list'))
 
 if __name__ == '__main__':
     # Create directories
